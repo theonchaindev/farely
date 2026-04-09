@@ -1,33 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { jwtVerify } from 'jose'
+import { randomUUID } from 'crypto'
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret-key-for-dev-only')
-const protectedRoutes = ['/dashboard']
-const authRoutes = ['/login', '/register']
-
-export async function proxy(req: NextRequest) {
-  const { pathname } = req.nextUrl
-  const token = req.cookies.get('farely-token')?.value
-
-  const isProtected = protectedRoutes.some((r) => pathname.startsWith(r))
-  const isAuth = authRoutes.some((r) => pathname.startsWith(r))
-
-  let valid = false
-  if (token) {
-    try {
-      await jwtVerify(token, secret)
-      valid = true
-    } catch {}
+export function proxy(req: NextRequest) {
+  const res = NextResponse.next()
+  if (!req.cookies.get('farely-session')) {
+    res.cookies.set('farely-session', randomUUID(), {
+      httpOnly: true,
+      maxAge: 60 * 60 * 24 * 365,
+      path: '/',
+    })
   }
-
-  if (isProtected && !valid) {
-    return NextResponse.redirect(new URL('/login', req.url))
-  }
-  if (isAuth && valid) {
-    return NextResponse.redirect(new URL('/dashboard', req.url))
-  }
-
-  return NextResponse.next()
+  return res
 }
 
-export const config = { matcher: ['/dashboard/:path*', '/login', '/register'] }
+export const config = { matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'] }

@@ -1,23 +1,12 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import FlightCard from '@/components/FlightCard'
 import AddFlightModal from '@/components/AddFlightModal'
 
-interface User { id: string; name: string; email: string }
-
 export default function Dashboard() {
-  const router = useRouter()
-  const [user, setUser] = useState<User | null>(null)
   const [flights, setFlights] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
-
-  async function loadUser() {
-    const res = await fetch('/api/auth/me')
-    if (!res.ok) { router.push('/login'); return }
-    setUser(await res.json())
-  }
 
   async function loadFlights() {
     const res = await fetch('/api/flights')
@@ -25,7 +14,7 @@ export default function Dashboard() {
   }
 
   useEffect(() => {
-    Promise.all([loadUser(), loadFlights()]).then(() => setLoading(false))
+    loadFlights().then(() => setLoading(false))
   }, [])
 
   async function handleDelete(id: string) {
@@ -40,11 +29,6 @@ export default function Dashboard() {
       body: JSON.stringify({ flightId: id }),
     })
     if (res.ok) loadFlights()
-  }
-
-  async function handleLogout() {
-    await fetch('/api/auth/logout', { method: 'POST' })
-    router.push('/')
   }
 
   if (loading) {
@@ -64,17 +48,7 @@ export default function Dashboard() {
             <svg width="24" height="24" viewBox="0 0 28 28" fill="none"><path d="M24 4L4 14L12 16L14 24L24 4Z" fill="#3B82F6" /></svg>
             <span className="text-lg font-bold text-slate-900">farely</span>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-slate-500 hidden sm:block">
-              {user?.name}
-            </span>
-            <button
-              onClick={handleLogout}
-              className="text-sm text-slate-500 hover:text-slate-800 transition-colors font-medium"
-            >
-              Log out
-            </button>
-          </div>
+          <span className="text-sm text-slate-400">Track flights, fly for less</span>
         </div>
       </nav>
 

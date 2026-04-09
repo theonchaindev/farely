@@ -7,19 +7,9 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id             String          @id @default(cuid())
-  email          String          @unique
-  password       String
-  name           String
-  trackedFlights TrackedFlight[]
-  createdAt      DateTime        @default(now())
-}
-
 model TrackedFlight {
   id           String       @id @default(cuid())
-  userId       String
-  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId    String
   origin       String
   destination  String
   originCity   String

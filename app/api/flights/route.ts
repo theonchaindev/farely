@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSession } from '@/lib/auth'
+import { getSessionId } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
 import { getCheapestFlight } from '@/lib/amadeus'
 import { getAirport } from '@/lib/airports'
 
 export async function GET() {
-  const session = await getSession()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const sessionId = await getSessionId()
+  if (!sessionId) return NextResponse.json([])
 
   const flights = await prisma.trackedFlight.findMany({
-    where: { userId: session.userId },
+    where: { sessionId },
     include: { priceHistory: { orderBy: { checkedAt: 'desc' }, take: 10 } },
     orderBy: { createdAt: 'desc' },
   })
@@ -17,8 +17,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getSession()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const sessionId = await getSessionId()
+  if (!sessionId) return NextResponse.json({ error: 'No session' }, { status: 400 })
 
   const { origin, destination, departDate, returnDate, isRoundTrip } = await req.json()
   if (!origin || !destination || !departDate) {
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
 
   const flight = await prisma.trackedFlight.create({
     data: {
-      userId: session.userId,
+      sessionId,
       origin,
       destination,
       originCity: originAirport?.city || origin,

@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSession } from '@/lib/auth'
+import { getSessionId } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
 import { getCheapestFlight } from '@/lib/amadeus'
 
 export async function POST(req: NextRequest) {
-  const session = await getSession()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const sessionId = await getSessionId()
+  if (!sessionId) return NextResponse.json({ error: 'No session' }, { status: 400 })
 
   const { flightId } = await req.json()
-  const flight = await prisma.trackedFlight.findFirst({ where: { id: flightId, userId: session.userId } })
+  const flight = await prisma.trackedFlight.findFirst({ where: { id: flightId, sessionId } })
   if (!flight) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const offer = await getCheapestFlight(
