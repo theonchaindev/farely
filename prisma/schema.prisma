@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String          @id @default(cuid())
+  email          String          @unique
+  password       String
+  name           String
+  trackedFlights TrackedFlight[]
+  createdAt      DateTime        @default(now())
+}
+
+model TrackedFlight {
+  id           String       @id @default(cuid())
+  userId       String
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  origin       String
+  destination  String
+  originCity   String
+  destCity     String
+  departDate   String
+  returnDate   String?
+  isRoundTrip  Boolean      @default(false)
+  lowestPrice  Float?
+  currency     String       @default("GBP")
+  lastChecked  DateTime?
+  priceHistory PricePoint[]
+  createdAt    DateTime     @default(now())
+}
+
+model PricePoint {
+  id              String        @id @default(cuid())
+  trackedFlightId String
+  trackedFlight   TrackedFlight @relation(fields: [trackedFlightId], references: [id], onDelete: Cascade)
+  price           Float
+  currency        String
+  airline         String?
+  deepLink        String?
+  checkedAt       DateTime      @default(now())
+}
