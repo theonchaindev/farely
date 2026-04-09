@@ -1,27 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { searchAirports } from '@/lib/airports'
 
 export async function GET(req: NextRequest) {
-  const query = new URL(req.url).searchParams.get('q') || ''
-  if (!query || query.length < 2) return NextResponse.json([])
-
-  const key = process.env.RAPIDAPI_KEY
-  if (!key) return NextResponse.json([])
-
-  try {
-    const res = await fetch(
-      `https://sky-scrapper.p.rapidapi.com/api/v1/flights/searchAirport?query=${encodeURIComponent(query)}&locale=en-GB`,
-      {
-        headers: {
-          'x-rapidapi-key': key,
-          'x-rapidapi-host': 'sky-scrapper.p.rapidapi.com',
-        },
-        next: { revalidate: 86400 },
-      }
-    )
-    if (!res.ok) return NextResponse.json([])
-    const data = await res.json()
-    return NextResponse.json(data.data || [])
-  } catch {
-    return NextResponse.json([])
-  }
+  const q = new URL(req.url).searchParams.get('q') || ''
+  if (q.length < 2) return NextResponse.json([])
+  const results = searchAirports(q)
+  return NextResponse.json(
+    results.map(a => ({
+      skyId: a.iata,
+      entityId: a.iata,
+      label: `${a.city} (${a.iata})`,
+      sublabel: a.country,
+      type: 'AIRPORT',
+      iata: a.iata,
+      city: a.city,
+    }))
+  )
 }

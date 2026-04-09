@@ -65,18 +65,14 @@ function NoKeyBanner() {
       <div className="flex gap-3">
         <span className="text-xl">🔑</span>
         <div>
-          <p className="text-sm font-semibold text-amber-900">Add your RapidAPI key to see flights</p>
-          <p className="text-xs text-amber-700 mt-0.5">
-            Subscribe to <strong>Sky Scrapper</strong> on RapidAPI (free tier available), then add <code className="bg-amber-100 px-1 rounded">RAPIDAPI_KEY</code> to your Vercel environment variables and redeploy.
-          </p>
-          <a
-            href="https://rapidapi.com/apiheya/api/sky-scrapper"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 mt-2 text-xs font-semibold text-amber-700 hover:underline"
-          >
-            Get API key on RapidAPI →
-          </a>
+          <p className="text-sm font-semibold text-amber-900">Add your Amadeus API key to see live prices</p>
+          <ol className="text-xs text-amber-800 mt-1.5 space-y-1 list-decimal list-inside">
+            <li>Sign up free at <a href="https://developers.amadeus.com" target="_blank" rel="noopener noreferrer" className="underline">developers.amadeus.com</a></li>
+            <li>Create a self-service app → copy your Client ID &amp; Secret</li>
+            <li>Add <code className="bg-amber-100 px-1 rounded">AMADEUS_CLIENT_ID</code> and <code className="bg-amber-100 px-1 rounded">AMADEUS_CLIENT_SECRET</code> to Vercel env vars</li>
+            <li>Redeploy</li>
+          </ol>
+          <p className="text-xs text-amber-600 mt-1.5">Free tier: 2,000 API calls/month — no credit card needed.</p>
         </div>
       </div>
     </div>
@@ -154,10 +150,9 @@ function RouteCard({ route, onRemove }: { route: TrackedRoute; onRemove: () => v
     setSearched(true)
     try {
       const params = new URLSearchParams({
+        origin: route.origin.label,
         originSkyId: route.origin.skyId,
-        originEntityId: route.origin.entityId,
-        destinationSkyId: route.destination.skyId,
-        destinationEntityId: route.destination.entityId,
+        destination: route.destination.skyId,  // IATA code for Amadeus
         date,
       })
       const res = await fetch(`/api/search?${params}`)
