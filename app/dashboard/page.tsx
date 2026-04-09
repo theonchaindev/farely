@@ -140,7 +140,6 @@ function RouteCard({ route, onRemove }: { route: TrackedRoute; onRemove: () => v
   const [date, setDate] = useState(defaultDate)
   const [flights, setFlights] = useState<Flight[]>([])
   const [loading, setLoading] = useState(false)
-  const [configured, setConfigured] = useState<boolean | null>(null)
   const [searched, setSearched] = useState(false)
   const [error, setError] = useState('')
 
@@ -152,12 +151,11 @@ function RouteCard({ route, onRemove }: { route: TrackedRoute; onRemove: () => v
       const params = new URLSearchParams({
         origin: route.origin.label,
         originSkyId: route.origin.skyId,
-        destination: route.destination.skyId,  // IATA code for Amadeus
+        destination: route.destination.skyId,
         date,
       })
       const res = await fetch(`/api/search?${params}`)
       const data = await res.json()
-      setConfigured(data.configured)
       setFlights(data.flights || [])
       if (data.error) setError(data.error)
     } catch {
@@ -236,16 +234,14 @@ function RouteCard({ route, onRemove }: { route: TrackedRoute; onRemove: () => v
           </p>
         )}
 
-        {searched && configured === false && <NoKeyBanner />}
-
-        {searched && configured && loading === false && flights.length === 0 && !error && (
+        {searched && loading === false && flights.length === 0 && !error && (
           <div className="text-center py-6">
             <p className="text-slate-500 text-sm font-medium">No flights found</p>
             <p className="text-slate-400 text-xs mt-1">Try a different date or check the route exists.</p>
           </div>
         )}
 
-        {error && configured && (
+        {error && (
           <p className="text-red-400 text-sm text-center py-4">{error}</p>
         )}
 
