@@ -118,3 +118,16 @@ export function searchAirports(query: string): Airport[] {
 export function getAirport(iata: string): Airport | undefined {
   return airports.find((a) => a.iata === iata)
 }
+
+// City → airport IATA codes (for multi-airport cities)
+export const cityAirports: Record<string, string[]> = {
+  London: ['STN', 'LGW', 'LHR', 'LTN', 'LCY'],
+  Paris:  ['CDG', 'ORY'],
+  'New York': ['JFK', 'LGA', 'EWR'],
+  Istanbul: ['IST', 'SAW'],
+  Tokyo: ['NRT', 'HND'],
+}
+
+export function getOriginIatas(cityOrIata: string): string[] {
+  return cityAirports[cityOrIata] ?? [cityOrIata]
+}
